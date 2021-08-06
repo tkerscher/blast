@@ -1,0 +1,4 @@
+include README.md
+include blase/bins.txt
+include blase/models.pth
+include blase/scaling.npz
