@@ -69,6 +69,10 @@ outside their intervals.
 The evaluation suggests that the model outputs rather a 99.5% prediction interval than a 95% one. One might want to
 rescale the interval accordingly.
 
+![Error Distribution](img/error.png)
+
+This shows the prediction error and the prediction interval distribution using a moving window and smoothed using cubic splines.
+
 ## Use BlaSE in code
 
 BlaSE can also be imported as python package:
