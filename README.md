@@ -80,8 +80,9 @@ BlaSE can also be imported as python package:
 from blase import *
 
 estimator = Estimator()
-sed = parse_sed('sed.txt') #reads the file
-peak, err = estimator(bin_data(sed))
+sed, pos = parse_sed('sed.txt', position=True) #reads the file
+bag = get_bag(pos) #Returns bag if sed was part of training
+peak, err = estimator(bin_data(sed), bag)
 ```
 
 ## References
