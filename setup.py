@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='blase',
-    version='0.1',
+    version='0.2',
     description='Synchtrotron peak estimator for blazars',
     long_description='Estimates the synchrotron peak of blazars with prediction interval given a sed as produced by the VOUBlazar tool. Uses an ensemble of neural networks powered by pytorch.',
     classifiers=[
@@ -23,7 +23,9 @@ setup(name='blase',
     packages=['blase'],
     install_requires=[
         'numpy',
-        'torch'
+        'scipy',
+        'torch',
+        'tqdm'
     ],
     entry_points={
         'console_scripts': ['blase=blase.blase:main']

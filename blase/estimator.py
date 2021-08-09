@@ -3,6 +3,34 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import importlib.resources as res
+from scipy.spatial import KDTree
+
+_positions = None
+_bags = None
+with res.path(__package__, 'bag_index.npy') as p:
+    index = np.load(p)
+    _positions = index[:,:2]
+    _bags = index[:,2].astype(int)
+_tree = KDTree(_positions)
+#KDTree returns one after the last as index for not found
+#We exploit that by adding a 'not found'-value at the end of bags
+_bags = np.append(_bags, -1)
+
+def get_bag(positions, radius=0.1) -> np.ndarray:
+    """
+    Returns the bag index for the seds at the given positions. Seds that were
+    not part of the training set are given the index -1.
+
+    Parameters:
+    positions (numpy.ndarray): The positions of the seds to query. Either of
+    shape (2,) for a single sed or (N,2) for a batch.
+
+    Returns:
+    The bag index of the seds. Either a single int if only one sed was queried
+    or a numpy.ndarray of type int and shape (N,). -1 denotes unseen data.
+    """
+    _, indices = _tree.query(positions, distance_upper_bound=radius)
+    return _bags[indices]
 
 class Model(nn.Module):
     """

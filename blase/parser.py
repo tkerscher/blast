@@ -39,20 +39,24 @@ def bin_data(sed) -> np.ndarray:
         except TypeError:
             raise ValueError('Expected either a single sed as numpy array of shape (N,2) or a list of such seds')
 
-def parse_sed(sed, sanitize=True) -> np.ndarray:
+def parse_sed(sed, sanitize=True, position=False) -> np.ndarray:
     """
-    Parses a sed given by either a filepath or the string containing it.
+    Parses a sed given by either a filepath, file object or the string containing it.
     The result has a shape of (N,2), i.e. each row is a sample while the first column is the
     frequency in Hz and the second the flux in erg/cm²/s both in log10 space.
 
     Parameters:
-    sed: Either filepath or string of a sed.
+    sed: Either filepath, a object supporting readlines() or string of a sed.
     sanitize: True if nonsense data such as zero flux should be ignore. Default True.
+    position: True if the astronomical coordinates should also be parsed. Default False.
 
     Returns:
     Sed in log10 of shape (N,2) with each row a sample point and the columns the frequency and flux.
+    If position is True, a tuple of the sed as described before and the astronomical coordinate.
     """
-    def parse(lines, sanitize):
+    def parse(lines, sanitize, position):
+        if len(lines) < 4:
+            return None, None if position else None
         _data = []
         for line in lines[4:]:
             entries = line.split()
@@ -69,12 +73,19 @@ def parse_sed(sed, sanitize=True) -> np.ndarray:
             _data = np.delete(_data, _data[:,0] <= 0, axis=0)
             _data = np.delete(_data, _data[:,1] <= 0, axis=0)
         _data = np.log10(_data)
-        return _data
+        if position:
+            head = lines[0].split()
+            pos = np.array([float(head[3]),float(head[4])])
+            return _data, pos
+        else:
+            return _data
 
-    if isfile(sed):
+    if callable(getattr(sed, 'readlines', None)):
+        return parse(sed.readlines(), sanitize, position)
+    elif type(sed) is str and isfile(sed):
         with open(sed, 'r') as f:
-            return parse(f.readlines(), sanitize)
+            return parse(f.readlines(), sanitize, position)
     elif type(sed) is str:
-        return parse(sed.split('\n'), sanitize)
+        return parse(sed.split('\n'), sanitize, position)
     else:
         raise ValueError('Expected sed to be either a path to a sed file or a string containing it')

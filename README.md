@@ -33,12 +33,11 @@ This gives the following output:
 
 The first value is the synchrotron peak and the second the 95% prediction interval both in `log10`.
 
-Note that around 3,800 SEDs were used to train the estimator. Thus there's a high probability, that the SED you want
-to estimate was used for training. In this case you have to specify the bag it belongs to as argument to blase:
-(see [How it works](#how-it-works); `estimates.csv` also lists the bags) 
+BlaSE also supports bulk estimation, e.g. estimating a whole catalogue, by providing a directory or zip file containing
+the seds as well as an output file in which the results will be written to as csv:
 
 ```
-blase sed.txt -b 4
+blase seds.zip -o estimates.csv
 ```
 
 ## How it works
