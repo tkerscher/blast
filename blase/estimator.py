@@ -117,14 +117,18 @@ class Estimator():
 
         means = []
         vars = []
-        for i in range(5):
-            #skip if sed is part of bag
-            if i == bag:
-                continue
-            for member in self.models[i]:
+        #check for out of bag estimate
+        if bag is not None and bag >= 0 and bag < len(self.models):
+            for member in self.models[bag]:
                 mean, var = member(input)
                 means.append(mean)
                 vars.append(var)
+        else:
+            for i in range(5):
+                for member in self.models[i]:
+                    mean, var = member(input)
+                    means.append(mean)
+                    vars.append(var)
         means = torch.stack(means)
         vars = torch.stack(vars)
 
