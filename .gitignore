@@ -7,3 +7,6 @@ blase/__pycache__
 /*.egg-info
 /*.egg
 build
+
+4LAC_estimates.csv
+table-4LAC-DR2-*.fits
