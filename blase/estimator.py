@@ -77,8 +77,12 @@ class Estimator():
         sed = bin_data(parse_sed('sed.txt'))
         peak, err = estimator(sed)
 
-    The estimator returns both an estimate for the synchrotron peak as well as a 95% prediction
-    interval. It is also possible to batch multiple seds along the first axis.
+    The estimator returns both an estimate for the synchrotron peak as well as a prediction
+    interval of given width (default is 95%). It is also possible to batch multiple seds along the
+    first axis. To specify a different prediction interval width, supply the named sigma argument::
+
+        peak, err = estimator(sed, sigma=1.0)
+    
     """
     def __init__(self):
         #load scaling
@@ -98,7 +102,7 @@ class Estimator():
             models = torch.load(p)
             self.models = [[load_model(models, bag, i) for i in range(5)] for bag in range(5)]      
 
-    def __call__(self, sed, bag=None):
+    def __call__(self, sed, bag=None, *, sigma=1.96):
         #sed is expected to be a allready binned, thus a numpy array of shape (N,26)
         if not type(sed) is np.ndarray:
             raise ValueError('Expected sed to be a numpy array!')
@@ -142,6 +146,6 @@ class Estimator():
 
         #scale back
         mean = mean * self.label_scale + self.label_mean
-        err = 1.96 * std * self.label_scale
+        err = sigma * std * self.label_scale
 
         return mean.squeeze(), err.squeeze()

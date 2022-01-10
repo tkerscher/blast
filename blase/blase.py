@@ -22,6 +22,8 @@ def main():
      help='Number of digits after the period. Ignored for bulk estimations.')
     parser.add_argument('-r', '--radius', type=float, default=0.1,
      help='Maximal radius used to search for used training sample.')
+    parser.add_argument('-w', '--width', type=float, default=1.96,
+     help='Prediction interval width in sigmas (default 1.96 ~ 95%%)')
     args = parser.parse_args()
 
     p = args.precision
@@ -42,7 +44,7 @@ def main():
                         print(f'{filename} is not a valid sed and thus skipped')
                         continue
                     bag = get_bag(position, args.radius)
-                    peak, err = estimator(bin_data(sed), bag)
+                    peak, err = estimator(bin_data(sed), bag, sigma=args.width)
                     out.write(f'{filename},{position[0]},{position[1]},{peak:.{p}f},{err:.{p}f}\n')
 
 
@@ -53,7 +55,7 @@ def main():
             print('The input file is no valid sed!')
             exit(-1)
         bag = args.bag if args.bag is not None else get_bag(position)
-        peak, err = estimator(bin_data(sed), bag)
+        peak, err = estimator(bin_data(sed), bag, sigma=args.width)
         if args.no_error:
             print(f'{peak:.{p}f}')
         else:

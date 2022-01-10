@@ -31,7 +31,11 @@ This gives the following output:
 12.42 (+/- 0.71)
 ```
 
-The first value is the synchrotron peak and the second the 95% prediction interval both in `log10`.
+The first value is the synchrotron peak and the second the 95% prediction interval both in `log10`. It is possible to specify a different prediction interval width by the `-w` argument, followed by the width in sigmas:
+
+```
+blase sed.txt -w 1.0
+```
 
 BlaSE also supports bulk estimation, e.g. estimating a whole catalogue, by providing a directory or zip file containing
 the seds as well as an output file in which the results will be written to as csv:
