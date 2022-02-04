@@ -37,7 +37,7 @@ The first value is the synchrotron peak and the second the 95% prediction interv
 blast sed.txt -w 1.0
 ```
 
-BlaSE also supports bulk estimation, e.g. estimating a whole catalogue, by providing a directory or zip file containing
+BlaST also supports bulk estimation, e.g. estimating a whole catalogue, by providing a directory or zip file containing
 the seds as well as an output file in which the results will be written to as csv:
 
 ```
@@ -73,7 +73,7 @@ The final one shows the prediction error and the prediction interval distributio
 
 ![Error Distribution](img/error.png)
 
-## Use BlaSE in code
+## Use BlaST in code
 
 BlaST can also be imported as python package:
 
