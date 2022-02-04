@@ -1,6 +1,6 @@
 logs/
 models/
-blase/__pycache__
+blast/__pycache__
 
 *.pyc
 /dist/
