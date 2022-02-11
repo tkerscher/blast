@@ -71,7 +71,7 @@ class Estimator():
     Estimator for synchrotron peaks of blazars. To get an estimation the estimator can simply be
     called with a binned sed::
 
-        from blase import Estimator, bin_data, parse_sed
+        from blast import Estimator, bin_data, parse_sed
 
         estimator = Estimator()
         sed = bin_data(parse_sed('sed.txt'))

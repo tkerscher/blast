@@ -5,7 +5,7 @@ from os import walk
 from os.path import isfile, isdir, join
 from tqdm import tqdm
 from zipfile import ZipFile, is_zipfile
-from blase import *
+from blast import *
 
 def main():
     parser = ArgumentParser(description='Estimates the synchrotron peak of an blazar including a 95% prediction interval given its spectral energy distribution as outputted by the VOUBlazar tool.')
