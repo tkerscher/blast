@@ -44,6 +44,27 @@ the seds as well as an output file in which the results will be written to as cs
 blast seds.zip -o estimates.csv
 ```
 
+With V2 you now also have the option to estimate the synchrotron peak flux (`erg/cm2/s`), again in `log10`.
+You enable this with the `-f` flag:
+
+```
+-12.39 (+/- 0.63) @ 12.39 (+/- 0.39)
+```
+
+## Changes from v1 to v2
+
+With v2 there has been some major changes. Some are listed in the following:
+
+- **New data set** (courtesy of N. Krieger)  
+The data set has been refined resulting in a new set independent of the previous
+one. This one now also includes labels for the flux.
+- **Flux estimate**  
+Biggest difference is the estimation of the synchrotron peak's flux by an
+independent ensemble of neural networks.
+- **Save models in ONNX format**  
+Previously, the tool needed pytorch installed, which is quite large. We moved to
+ONNX runtime to make the installation slimmer.
+
 ## How it works
 
 BlaST consists of an ensemble of similar neural networks power by [pytorch](https://pytorch.org/) based on the method presented in 
@@ -59,19 +80,47 @@ need to install [PyTorch Lightning](https://www.pytorchlightning.ai/)
 
 ## Performance
 
+The performance was evaluated using out-of-bag estimates on the training data
+including a 95% prediction interval. Metrics are shown as median and 25%/75%
+quantile.
+Since the model for predicting the peak frequency and peak flux are independent,
+metrics are shown for both.
+
+| Metric   | Value  | Freq  | Flux  |
+|----------|--------|-------|-------|
+| Abs Err  | Median | 0.163 | 0.104 |
+|          | 25%    | 0.075 | 0.049 |
+|          | 75%    | 0.314 | 0.186 |
+| PI Width | Median | 1.267 | 1.087 |
+|          | 25%    | 1.009 | 0.971 |
+|          | 75%    | 1.625 | 1.198 |
+| Interval | Median | 1.400 | 1.088 |
+| Score    | 25%    | 1.010 | 0.972 |
+|          | 75%    | 1.636 | 1.199 |
+
+### Peak Frequency Estimate
+
 The following show the prediction histogram with the median as black line, as well as the 90% and 10% quantile shown as
 dotted lines
 
-![Prediction Histogram](img/hist.png)
+![Prediction Histogram: Peak Frequency](img/hist_freq.png)
 
 The next shows the prediction interval (95%) widths. The percentages above and below show the respective amount of samples
 outside their intervals.
 
-![Prediction Intervals](img/pred_int.png)
+![Prediction Intervals: Peak Frequency](img/pi_freq.png)
 
 The final one shows the prediction error and the prediction interval distribution using a moving window and smoothed using cubic splines.
 
-![Error Distribution](img/error.png)
+![Error Distribution: Peak Frequency](img/dist_freq.png)
+
+### Peak Flux Estimate
+
+Same plots, but now for the peak flux estimate.
+
+![Prediction Histogram: Peak Flux](img/hist_flux.png)
+![Prediction Intervals: Peak Flux](img/pi_flux.png)
+![Error Distribution: Peak Flux](img/dist_flux.png)
 
 ## Use BlaST in code
 
@@ -80,10 +129,16 @@ BlaST can also be imported as python package:
 ```python
 from blast import *
 
-estimator = Estimator()
 sed, pos = parse_sed('sed.txt', position=True) #reads the file
 bag = get_bag(pos) #Returns bag if sed was part of training
-peak, err = estimator(bin_data(sed), bag)
+bins = bin_data(sed)
+
+# estimate peak frequency
+estimator = PeakFrequencyEstimator()
+peak, err = estimator(bins, bag)
+# estimate peak flux
+estimator = PeakFluxEstimator()
+peak, err = estimator(bins, bag)
 ```
 
 ## References

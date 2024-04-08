@@ -2,9 +2,7 @@ import importlib.resources as res
 import numpy as np
 from os.path import isfile
 
-_bin_edges = None
-with res.path(__package__, 'bins.txt') as p:
-    _bin_edges = np.loadtxt(p)
+_bin_edges = np.loadtxt(res.files("blast").joinpath("bins.txt"), skiprows=1)[:,:2]
 
 def get_bin_edges() -> np.ndarray:
     """
@@ -59,12 +57,18 @@ def parse_sed(sed, sanitize=True, position=False) -> np.ndarray:
             return None, None if position else None
         _data = []
         for line in lines[4:]:
+            if line.isspace(): continue
             entries = line.split()
+            # skip upper limits
+            if entries[6] != "Det": continue
+
             x = float(entries[0])
             y = float(entries[1])
             up = float(entries[2])
             lo = float(entries[3])
             #sanity check errors
+            if not np.isfinite(x) or not np.isfinite(y):
+                continue
             if sanitize and (up < y or y < lo) and up != 0.0 and lo != 0.0:
                 continue #Skip this entry
             _data.append([x, y])
@@ -89,3 +93,4 @@ def parse_sed(sed, sanitize=True, position=False) -> np.ndarray:
         return parse(sed.split('\n'), sanitize, position)
     else:
         raise ValueError('Expected sed to be either a path to a sed file or a string containing it')
+

@@ -1,5 +1,0 @@
-include README.md
-include blast/bag_index.npy
-include blast/bins.txt
-include blast/models.pth
-include blast/scaling.npz

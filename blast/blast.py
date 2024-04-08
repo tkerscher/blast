@@ -1,6 +1,7 @@
 #!/usr/bin/env
 
 from argparse import ArgumentParser
+from io import TextIOWrapper
 from os import walk
 from os.path import isfile, isdir, join
 from tqdm import tqdm
@@ -14,6 +15,8 @@ def main():
      help='Specifies in which bag the sed was during training. Overrides automatic detection.')
     parser.add_argument('-e', '--no-error', action='store_true',
      help='Outputs only the estimated peak without the error. Ignored for bulk estimations.')
+    parser.add_argument('-f', '--flux', action='store_true',
+     help='Estimates flux alongside frequency')
     parser.add_argument('-s', '--silent', action='store_true',
      help='Hides the progressbar for bulk estimation.')
     parser.add_argument('-o', '--out', type=str, default=None,
@@ -27,7 +30,8 @@ def main():
     args = parser.parse_args()
 
     p = args.precision
-    estimator = Estimator()
+    freq_est = PeakFrequencyEstimator()
+    flux_est = PeakFluxEstimator()
 
     def bulk_estimate(filenames, open_fn):
         if args.out is None:
@@ -35,18 +39,37 @@ def main():
             return
         with open(args.out, 'w') as out:
             #write header
-            out.write('Filename,Right Ascension,Declination,Estimated Peak,Estimation Error (95%)\n')
+            cols = [
+                'Filename',
+                'Right Ascension',
+                'Declination',
+                'Estimated Peak Frequency',
+                'Frequency Error',
+            ]
+            if args.flux:
+                cols.extend(['Estimated Peak Flux','Flux Error'])
+            out.write(','.join(cols) + '\n')
             iterator = filenames if args.silent else tqdm(filenames)
             for filename in iterator:
                 with open_fn(filename) as file:
                     sed, position = parse_sed(file, position=True)
+                    out.write(f'{filename},{position[0]},{position[1]},')
                     if sed is None:
                         print(f'{filename} is not a valid sed and thus skipped')
                         continue
                     bag = get_bag(position, args.radius)
-                    peak, err = estimator(bin_data(sed), bag, sigma=args.width)
-                    out.write(f'{filename},{position[0]},{position[1]},{peak:.{p}f},{err:.{p}f}\n')
+                    peak, err = freq_est(bin_data(sed), bag, sigma=args.width)
+                    out.write(f'{peak:.{p}f},{err:.{p}f}')
+                    if args.flux:
+                        peak, err = flux_est(bin_data(sed), bag, sigma=args.width)
+                        out.write(f',{peak:.{p}f},{err:.{p}f}')
+                    out.write('\n')
 
+    def print_est(val, err):
+        if args.no_error:
+            print(f'{val:.{p}f}', end="")
+        else:
+            print(f'{val:.{p}f} (+/- {err:.{p}f})', end="")
 
     if isfile(args.sed) and not is_zipfile(args.sed):
         #estimate single sed file
@@ -55,15 +78,18 @@ def main():
             print('The input file is no valid sed!')
             exit(-1)
         bag = args.bag if args.bag is not None else get_bag(position)
-        peak, err = estimator(bin_data(sed), bag, sigma=args.width)
-        if args.no_error:
-            print(f'{peak:.{p}f}')
-        else:
-            print(f'{peak:.{p}f} (+/- {err:.{p}f})')
+        data = bin_data(sed)
+        if args.flux:
+            peak, err = flux_est(data, bag, sigma=args.width)
+            print_est(peak, err)
+            print(" @ ", end="")          
+        peak, err = freq_est(bin_data(sed), bag, sigma=args.width)
+        print_est(peak, err)
+        print("") # new line
     elif is_zipfile(args.sed):
         zipfile = ZipFile(args.sed)
         filenames = [name for name in zipfile.namelist() if name[-1] != '/']
-        bulk_estimate(filenames, zipfile.open)
+        bulk_estimate(filenames, lambda file: TextIOWrapper(zipfile.open(file)))
     elif isdir(args.sed):
         names = []
         for root, dirnames, filenames in walk(args.sed):

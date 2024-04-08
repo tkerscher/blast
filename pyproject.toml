@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "astroblast"
+version = "2.0.0"
+authors = [
+    {name = "Tobias Kerscher", email = "88444139+tkerscher@users.noreply.github.com"}
+]
+description = "Synchtrotron peak estimator for blazars"
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["blazar", "synchrotron"]
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Astronomy"
+]
+dependencies = [
+    "numpy>=1.20",
+    "onnxruntime",
+    "scipy",
+    "tqdm"
+]
+
+[project.optional-dependencies]
+dev = [
+    "matplotlib",
+    "pytorch-lightning>=2.0",
+    "scikit-learn",
+    "seaborn",
+    "torch>=1.2.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/tkerscher/blast"
+
+[project.scripts]
+blast = "blast.blast:main"
+
+[tool.setuptools]
+packages = ["blast", "blast.models.freq", "blast.models.flux"]
+
+[tool.setuptools.package-data]
+"blast" = ["bins.txt", "bag_index.npy", "scaling.npz", "models/**/*.onnx"]
