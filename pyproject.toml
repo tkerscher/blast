@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "astroblast"
-version = "2.0.0"
+version = "2.0.1"
 authors = [
     {name = "Tobias Kerscher", email = "88444139+tkerscher@users.noreply.github.com"}
 ]

@@ -43,6 +43,8 @@ def get_bag(positions, radius=0.1) -> np.ndarray:
     The bag index of the seds. Either a single int if only one sed was queried
     or a numpy.ndarray of type int and shape (N,). -1 denotes unseen data.
     """
+    if positions is None:
+        return -1
     _, indices = _tree.query(positions, distance_upper_bound=radius)
     return _bags[indices]
 
